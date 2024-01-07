@@ -1,6 +1,10 @@
 package com.enigma.inisalesapi.repository;
 
+import com.enigma.inisalesapi.entity.Admin;
 import com.enigma.inisalesapi.entity.Category;
+import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,11 +16,24 @@ import java.util.Optional;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category,String> {
-    Optional<Category> findByName(String name);
+   @Modifying
+   @Transactional
+    @Query(value = "INSERT INTO m_category (id, name, created_at) " +
+            "VALUES (:id, :name, :createdAt)", nativeQuery = true)
+    void insertCategoryNative(@Param("id") String id,
+                              @Param("name") String name,
+                              @Param("createdAt") LocalDateTime createdAt);
+
+    @Query(value = "SELECT * FROM m_category WHERE id = :id", nativeQuery = true)
+    Category findByIdNative(@Param("id") String id);
+    @Query(value = "SELECT * FROM m_category WHERE LOWER(name) LIKE LOWER(CONCAT('%', :name, '%'))", nativeQuery = true)
+    Page<Category> findByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
 
     @Modifying
-    @Query(value = "INSERT INTO m_category (id, name, created_at) " +
-            "VALUES (gen_random_uuid(), :name, :createdAt", nativeQuery = true)
-    Category insertCategoryNative(@Param("name")String name,
-                              @Param("createdAt") LocalDateTime createdAt);
+    @Query(value = "UPDATE m_category SET name = :name WHERE id = :id", nativeQuery = true)
+    void updateCategoryNameNative(@Param("id") String id, @Param("name") String name);
+
+    @Modifying
+    @Query(value = "DELETE FROM m_category WHERE id = :id", nativeQuery = true)
+    void deleteByIdNative(@Param("id") String id);
 }
