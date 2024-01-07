@@ -8,6 +8,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder(toBuilder = true)
 public class CustomerAddress {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -21,4 +22,8 @@ public class CustomerAddress {
     private String postalCode;
     @Column(name = "is_primary")
     private Boolean isPrimary;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 }
