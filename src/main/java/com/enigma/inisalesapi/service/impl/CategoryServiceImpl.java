@@ -6,6 +6,7 @@ import com.enigma.inisalesapi.dto.response.CategoryResponse;
 import com.enigma.inisalesapi.entity.Category;
 import com.enigma.inisalesapi.repository.CategoryRepository;
 import com.enigma.inisalesapi.service.CategoryService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
-private final CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
 
     @Override
@@ -59,5 +60,41 @@ private final CategoryRepository categoryRepository;
                 .categoryName(category.getName())
                 .createdAt(category.getCreatedAt())
                 .build());
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse updateCategoryById(String id, CategoryRequest categoryRequest) {
+        CategoryResponse categoryResponse = getCategoryById(id);
+        if (categoryResponse != null) {
+            categoryRepository.updateCategoryNameNative(
+                    id,
+                    categoryRequest.getCategoryName()
+            );
+
+            CategoryResponse updatedCategory = getCategoryById(id);
+            if (updatedCategory != null) {
+
+                return CategoryResponse.builder()
+                        .id(updatedCategory.getId())
+                        .categoryName(updatedCategory.getCategoryName())
+                        .createdAt(updatedCategory.getCreatedAt())
+                        .build();
+            } else {
+                throw new RuntimeException("Failed to retrieve updated category.");
+            }
+        }
+        throw new RuntimeException("Category not found with id: " + id);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCategoryById(String id) {
+        Category category = categoryRepository.findByIdNative(id);
+        if (category != null) {
+            categoryRepository.deleteByIdNative(id);
+        } else {
+            throw new RuntimeException("Category not found with id: " + id);
+        }
     }
 }

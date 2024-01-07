@@ -29,6 +29,11 @@ public interface CategoryRepository extends JpaRepository<Category,String> {
     @Query(value = "SELECT * FROM m_category WHERE LOWER(name) LIKE LOWER(CONCAT('%', :name, '%'))", nativeQuery = true)
     Page<Category> findByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
 
-    @Query(value = "SELECT id FROM m_category ORDER BY created_at DESC LIMIT 1", nativeQuery = true)
-    String findLastInsertedId();
+    @Modifying
+    @Query(value = "UPDATE m_category SET name = :name WHERE id = :id", nativeQuery = true)
+    void updateCategoryNameNative(@Param("id") String id, @Param("name") String name);
+
+    @Modifying
+    @Query(value = "DELETE FROM m_category WHERE id = :id", nativeQuery = true)
+    void deleteByIdNative(@Param("id") String id);
 }

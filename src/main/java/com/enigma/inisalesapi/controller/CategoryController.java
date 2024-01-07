@@ -3,19 +3,16 @@ package com.enigma.inisalesapi.controller;
 import com.enigma.inisalesapi.constant.AppPath;
 import com.enigma.inisalesapi.dto.request.CategoryRequest;
 import com.enigma.inisalesapi.dto.response.CategoryResponse;
-import com.enigma.inisalesapi.dto.response.CommonResponse;
 import com.enigma.inisalesapi.dto.response.PagingResponse;
 import com.enigma.inisalesapi.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import static com.enigma.inisalesapi.mapper.ResponseControllerMapper.getResponseEntity;
-import static com.enigma.inisalesapi.mapper.ResponseControllerMapper.getResponseEntityPaging;
+import static com.enigma.inisalesapi.mapper.ResponseControllerMapper.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -67,6 +64,32 @@ public class CategoryController {
         } catch (Exception e) {
             message = e.getMessage();
             return getResponseEntity(message, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateCategoryById(@RequestBody CategoryRequest categoryRequest,@PathVariable String id){
+        try {
+            CategoryResponse categoryResponse = categoryService.updateCategoryById(id,categoryRequest);
+            message = "Successfully update category with id "+id;
+            return getResponseEntity(message, HttpStatus.OK,categoryResponse);
+        }catch (Exception e){
+            message = e.getMessage();
+            return getResponseEntity(message,HttpStatus.INTERNAL_SERVER_ERROR,null);
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteCategoryById(@PathVariable String id){
+        try {
+            categoryService.deleteCategoryById(id);
+            message = "Successfully delete category";
+            return getResponseEntity(message, HttpStatus.OK,null);
+        }catch (Exception e){
+            message = e.getMessage();
+            return getResponseEntity(message,HttpStatus.INTERNAL_SERVER_ERROR,null);
         }
     }
 }
