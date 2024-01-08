@@ -11,4 +11,6 @@ public interface AuthService {
     RegisterResponse registerAdmin(AuthRequest authRequest);
     RegisterResponse registerSuperAdmin(AuthRequest authRequest);
 
+    RegisterResponse registerCustomer(AuthRequest authRequest);
+
 }

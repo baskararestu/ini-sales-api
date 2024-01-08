@@ -17,8 +17,8 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     @Column(nullable = false)
-    private String first_name;
-    private String last_name;
+    private String name;
+    private String address;
     @Column(unique = true,nullable = false)
     private String email;
     @Column(unique = true,length = 30)
@@ -27,9 +27,7 @@ public class Customer {
     private LocalDateTime createdAt;
 
     @OneToOne
-    @JoinColumn(name = "user_credential_id")
+    @JoinColumn(name = "user_credential_id",nullable = false)
     private UserCredential userCredential;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CustomerAddress> customerAddresses;
 }
