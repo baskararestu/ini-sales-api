@@ -34,10 +34,10 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponse createProduct(ProductRequest productRequest) {
         CategoryResponse category = categoryService.getCategoryById(productRequest.getCategoryId());
-      Optional<Product> checker=  productRepository.findProductByProductDetailNameAndProductDetailCategoryName
+      Optional<Product> checkerData=  productRepository.findProductByProductDetailNameAndProductDetailCategoryName
                 (productRequest.getProductName(),category.getCategoryName());
 //        Optional<Product> checker=  productRepository.findByNameAndCategory(productRequest.getProductName(), category.getCategoryName());
-        if(checker.isEmpty()){
+        if(checkerData.isEmpty()){
             ProductDetail savedDetail = ProductDetail.builder()
                     .name(productRequest.getProductName())
                     .description(productRequest.getDescription())

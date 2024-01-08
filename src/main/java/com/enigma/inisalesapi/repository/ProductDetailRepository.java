@@ -29,6 +29,6 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail,Str
     Optional<ProductDetail> findProductDetailByIdNative(@Param("id") String id);
 
     @Modifying
-    @Query(value = "UPDATE m_product_details SET is_active = false WHERE id = :productDetailId", nativeQuery = true)
+    @Query(value = "UPDATE m_product_details SET is_active = false, category_id = null WHERE id = :productDetailId", nativeQuery = true)
     void softDeleteProduct(@Param("productDetailId") String productDetailId);
 }

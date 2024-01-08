@@ -53,7 +53,7 @@ public class ProductController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<?>softDeleteById(@PathVariable String id){
         try {
             productService.delete(id);

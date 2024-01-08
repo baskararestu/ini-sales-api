@@ -36,4 +36,6 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
     @Query(value = "UPDATE m_products SET is_active = false WHERE id = :productId", nativeQuery = true)
     void softDeleteProduct(@Param("productId") String productId);
     Optional<Product>findProductByProductDetailNameAndProductDetailCategoryName(String productName,String categoryName);
+
+    Optional<Product>findProductByProductDetailNameAndIsActive(String productName, Boolean isActive);
 }
