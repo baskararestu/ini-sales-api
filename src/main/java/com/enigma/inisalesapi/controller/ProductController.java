@@ -12,10 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.enigma.inisalesapi.mapper.ResponseControllerMapper.getResponseEntity;
 
@@ -39,6 +36,19 @@ public class ProductController {
         } catch (Exception e) {
             message = "Failed to create product.";
             return getResponseEntity(message, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @GetMapping("/{id}")
+    public  ResponseEntity<?>getProductById(@PathVariable String id){
+        try {
+          ProductResponse productResponse = productService.getById(id);
+          message = "Successfully get product data using product id";
+          return getResponseEntity(message,HttpStatus.OK,productResponse);
+        }catch (Exception e){
+            message = e.getMessage();
+            return getResponseEntity(message,HttpStatus.INTERNAL_SERVER_ERROR,null);
         }
     }
 }
