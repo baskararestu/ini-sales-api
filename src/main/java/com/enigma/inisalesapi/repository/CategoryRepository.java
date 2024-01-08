@@ -1,5 +1,6 @@
 package com.enigma.inisalesapi.repository;
 
+import com.enigma.inisalesapi.dto.response.CategoryResponse;
 import com.enigma.inisalesapi.entity.Admin;
 import com.enigma.inisalesapi.entity.Category;
 import jakarta.transaction.Transactional;
@@ -36,4 +37,7 @@ public interface CategoryRepository extends JpaRepository<Category,String> {
     @Modifying
     @Query(value = "DELETE FROM m_category WHERE id = :id", nativeQuery = true)
     void deleteByIdNative(@Param("id") String id);
+
+    @Query(value = "SELECT * FROM m_category WHERE name = :name", nativeQuery = true)
+    CategoryResponse findCategoryByNameNative(@Param("name") String name);
 }

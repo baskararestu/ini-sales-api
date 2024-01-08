@@ -14,6 +14,7 @@ public interface CategoryService {
     Page<CategoryResponse>getAllByName(String name, Integer page, Integer size);
     CategoryResponse getCategoryById(String id);
 
+    CategoryResponse getCategoryByName(String name);
     CategoryResponse updateCategoryById(String id,CategoryRequest categoryRequest);
     void deleteCategoryById(String id);
 }
