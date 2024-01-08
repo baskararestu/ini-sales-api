@@ -5,7 +5,9 @@ import com.enigma.inisalesapi.dto.request.CategoryRequest;
 import com.enigma.inisalesapi.dto.request.ProductRequest;
 import com.enigma.inisalesapi.dto.response.CategoryResponse;
 import com.enigma.inisalesapi.dto.response.ProductResponse;
+import com.enigma.inisalesapi.exception.NotFoundException;
 import com.enigma.inisalesapi.exception.ProductAlreadyExistsException;
+import com.enigma.inisalesapi.exception.ProductInactiveException;
 import com.enigma.inisalesapi.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -54,16 +56,22 @@ public class ProductController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<?>softDeleteById(@PathVariable String id){
+    public ResponseEntity<?> softDeleteById(@PathVariable String id) {
         try {
             productService.delete(id);
-            message="Successfully soft delete product using product id";
-            return getResponseEntity(message,HttpStatus.OK,null);
-
-        }catch (Exception e){
+            message = "Successfully soft delete product using product id";
+            return getResponseEntity(message, HttpStatus.OK, null);
+        } catch (NotFoundException e) {
             message = e.getMessage();
-            return getResponseEntity(message,HttpStatus.INTERNAL_SERVER_ERROR,null);
+            return getResponseEntity(message, HttpStatus.NOT_FOUND, null);
+        } catch (ProductInactiveException e) {
+            message = e.getMessage();
+            return getResponseEntity(message, HttpStatus.CONFLICT, null);
+        } catch (Exception e) {
+            message = e.getMessage();
+            return getResponseEntity(message, HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
     }
+
 }
 

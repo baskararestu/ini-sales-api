@@ -7,7 +7,9 @@ import com.enigma.inisalesapi.entity.Category;
 import com.enigma.inisalesapi.entity.Product;
 import com.enigma.inisalesapi.entity.ProductDetail;
 import com.enigma.inisalesapi.entity.ProductPrice;
+import com.enigma.inisalesapi.exception.NotFoundException;
 import com.enigma.inisalesapi.exception.ProductAlreadyExistsException;
+import com.enigma.inisalesapi.exception.ProductInactiveException;
 import com.enigma.inisalesapi.repository.ProductRepository;
 import com.enigma.inisalesapi.service.CategoryService;
 import com.enigma.inisalesapi.service.ProductDetailService;
@@ -36,7 +38,6 @@ public class ProductServiceImpl implements ProductService {
         CategoryResponse category = categoryService.getCategoryById(productRequest.getCategoryId());
       Optional<Product> checkerData=  productRepository.findProductByProductDetailNameAndProductDetailCategoryName
                 (productRequest.getProductName(),category.getCategoryName());
-//        Optional<Product> checker=  productRepository.findByNameAndCategory(productRequest.getProductName(), category.getCategoryName());
         if(checkerData.isEmpty()){
             ProductDetail savedDetail = ProductDetail.builder()
                     .name(productRequest.getProductName())
@@ -101,12 +102,17 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void delete(String id) {
-        Optional<Product> product = productRepository.findById(id);
-        product.ifPresent(p -> {
-            productRepository.softDeleteProduct(p.getId());
-            productPriceService.deleteById(p.getProductPrice().getId());
-            productDetailService.deleteById(p.getProductDetail().getId());
-        });
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found."));
+
+        ProductDetail productDetail = product.getProductDetail();
+        if (productDetail.getIsActive()) {
+            productRepository.softDeleteProduct(productDetail.getId());
+            productPriceService.deleteById(product.getProductPrice().getId());
+            productDetailService.deleteById(productDetail.getId());
+        } else {
+            throw new ProductInactiveException("Product detail is already inactive.");
+        }
     }
 
 
