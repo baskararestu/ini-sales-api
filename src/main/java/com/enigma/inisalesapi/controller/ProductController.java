@@ -51,5 +51,19 @@ public class ProductController {
             return getResponseEntity(message,HttpStatus.INTERNAL_SERVER_ERROR,null);
         }
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PatchMapping("/{id}")
+    public ResponseEntity<?>softDeleteById(@PathVariable String id){
+        try {
+            productService.delete(id);
+            message="Successfully soft delete product using product id";
+            return getResponseEntity(message,HttpStatus.OK,null);
+
+        }catch (Exception e){
+            message = e.getMessage();
+            return getResponseEntity(message,HttpStatus.INTERNAL_SERVER_ERROR,null);
+        }
+    }
 }
 

@@ -58,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
 
             ProductPrice productPrice = productPriceService.create(savedPrice);
             String productId = UUID.randomUUID().toString();
-            productRepository.insertProductNative(productId, productDetail.getId(), productPrice.getId());
+            productRepository.insertProductNative(productId, true,productDetail.getId(), productPrice.getId());
 
             return ProductResponse.builder()
                     .productId(productId)
@@ -99,11 +99,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public void delete(String id) {
-
+        Optional<Product> product = productRepository.findById(id);
+        product.ifPresent(p -> {
+            productRepository.softDeleteProduct(p.getId());
+            productPriceService.deleteById(p.getProductPrice().getId());
+            productDetailService.deleteById(p.getProductDetail().getId());
+        });
     }
 
+
     @Override
+    @Transactional
     public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
         return null;
     }

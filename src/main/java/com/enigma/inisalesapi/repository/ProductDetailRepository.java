@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Repository
 public interface ProductDetailRepository extends JpaRepository<ProductDetail,String> {
@@ -25,5 +26,9 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail,Str
             @Param("created_at") LocalDateTime createdAt,
             @Param("category_id") String categoryId);
     @Query(value = "SELECT * FROM m_product_details WHERE id = :id", nativeQuery = true)
-    ProductDetail findProductDetailByIdNative(@Param("id") String id);
+    Optional<ProductDetail> findProductDetailByIdNative(@Param("id") String id);
+
+    @Modifying
+    @Query(value = "UPDATE m_product_details SET is_active = false WHERE id = :productDetailId", nativeQuery = true)
+    void softDeleteProduct(@Param("productDetailId") String productDetailId);
 }

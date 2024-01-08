@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,18 +23,27 @@ public class ProductPriceImpl implements ProductPriceService {
         String priceId=UUID.randomUUID().toString();
         productPriceRepository.insertProductPriceNative
                 (priceId,true,productPrice.getPrice(),productPrice.getStock(),LocalDateTime.now());
-        ProductPrice getCreatedPrice=getById(priceId);
+        Optional<ProductPrice> getCreatedPrice=getById(priceId);
+        ProductPrice getPrice = getCreatedPrice.get();
         return ProductPrice.builder()
-                .id(getCreatedPrice.getId())
-                .price(getCreatedPrice.getPrice())
-                .stock(getCreatedPrice.getStock())
-                .createdAt(getCreatedPrice.getCreatedAt())
-                .isActive(getCreatedPrice.isActive())
+                .id(getPrice.getId())
+                .price(getPrice.getPrice())
+                .stock(getPrice.getStock())
+                .createdAt(getPrice.getCreatedAt())
+                .isActive(getPrice.isActive())
                 .build();
     }
 
     @Override
-    public ProductPrice getById(String id) {
+    public Optional<ProductPrice> getById(String id) {
         return productPriceRepository.findProductPricesByIdNative(id);
+    }
+
+    @Override
+    public void deleteById(String id){
+        Optional<ProductPrice> productPrice = productPriceRepository.findProductPricesByIdNative(id);
+        productPrice.ifPresent(p->{
+            productPriceRepository.softDeleteProduct(p.getId());
+        });
     }
 }

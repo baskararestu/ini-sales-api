@@ -14,10 +14,11 @@ import java.util.Optional;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, String>, JpaSpecificationExecutor<Product> {
     @Modifying
-    @Query(value = "INSERT INTO m_products (id, product_detail_id, product_price_id) " +
-            "VALUES (:productId, :productDetailId, :productPriceId)", nativeQuery = true)
+    @Query(value = "INSERT INTO m_products (id, is_active, product_detail_id, product_price_id) " +
+            "VALUES (:productId, :isActive, :productDetailId, :productPriceId)", nativeQuery = true)
     void insertProductNative(
             @Param("productId") String productId,
+            @Param("isActive") Boolean isActive,
             @Param("productDetailId") String productDetailId,
             @Param("productPriceId") String productPriceId
     );
@@ -30,5 +31,9 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
             @Param("productName") String productName,
             @Param("categoryName") String categoryName
     );
+
+    @Modifying
+    @Query(value = "UPDATE m_products SET is_active = false WHERE id = :productId", nativeQuery = true)
+    void softDeleteProduct(@Param("productId") String productId);
     Optional<Product>findProductByProductDetailNameAndProductDetailCategoryName(String productName,String categoryName);
 }

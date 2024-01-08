@@ -17,6 +17,8 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+    @Column(name = "is_active",nullable = false)
+    private Boolean isActive;
     @ManyToOne
     @JoinColumn(name = "product_detail_id",unique = true)
     @JsonBackReference
@@ -25,4 +27,5 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "product_price_id",unique = true)
     @JsonBackReference
-    private ProductPrice productPrice;}
+    private ProductPrice productPrice;
+}

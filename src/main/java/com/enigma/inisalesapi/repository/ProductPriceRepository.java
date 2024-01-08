@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductPriceRepository extends JpaRepository<ProductPrice, String> {
@@ -25,8 +26,9 @@ public interface ProductPriceRepository extends JpaRepository<ProductPrice, Stri
             @Param("created_at") LocalDateTime createdAt
     );
     @Query(value = "SELECT * FROM m_product_price WHERE id = :id", nativeQuery = true)
-    ProductPrice findProductPricesByIdNative(@Param("id") String id);
-    @Query(value = "SELECT id FROM m_product_price ORDER BY created_at DESC LIMIT 1", nativeQuery = true)
-    String findLastInsertedId();
+    Optional<ProductPrice> findProductPricesByIdNative(@Param("id") String id);
+    @Modifying
+    @Query(value = "UPDATE m_product_price SET is_active = false WHERE id = :productPriceId", nativeQuery = true)
+    void softDeleteProduct(@Param("productPriceId") String productPriceId);
 }
 
