@@ -1,6 +1,7 @@
 package com.enigma.inisalesapi.service.impl;
 
 import com.enigma.inisalesapi.entity.ProductPrice;
+import com.enigma.inisalesapi.exception.NotFoundException;
 import com.enigma.inisalesapi.repository.ProductPriceRepository;
 import com.enigma.inisalesapi.service.ProductPriceService;
 import jakarta.persistence.EntityManager;
@@ -45,5 +46,22 @@ public class ProductPriceImpl implements ProductPriceService {
         productPrice.ifPresent(p->{
             productPriceRepository.softDeleteProduct(p.getId());
         });
+    }
+
+    @Override
+    public ProductPrice update(ProductPrice newPrice) {
+        ProductPrice existingPrice = productPriceRepository.findById(newPrice.getId()).orElseThrow(() -> new NotFoundException("Product Detail not found."));
+        if(!existingPrice.equals(newPrice)){
+            existingPrice.setActive(false);
+            productPriceRepository.save(existingPrice);
+
+            ProductPrice savedPrice = ProductPrice.builder()
+                    .id(newPrice.getId())
+                    .price(newPrice.getPrice())
+                    .stock(newPrice.getStock())
+                    .build();
+            return savedPrice;
+        }
+        return existingPrice;
     }
 }

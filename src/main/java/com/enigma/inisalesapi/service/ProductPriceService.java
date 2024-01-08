@@ -9,4 +9,6 @@ public interface ProductPriceService {
 
     Optional<ProductPrice> getById(String id);
     void deleteById(String id);
+    //    ProductDetail update(ProductDetail newProductDetail);
+    ProductPrice update(ProductPrice newPrice);
 }

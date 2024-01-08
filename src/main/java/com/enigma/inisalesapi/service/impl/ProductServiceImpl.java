@@ -123,11 +123,17 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new NotFoundException("Product not found."));
 
         ProductDetail existingDetail = product.getProductDetail();
-        if (existingDetail.getIsActive()) {
-            if (!existingDetail.getName().equals(productRequest.getProductName())
-                    || !existingDetail.getDescription().equals(productRequest.getDescription())
-                    || !existingDetail.getCategory().getId().equals(productRequest.getCategoryId())) {
+        ProductPrice existingPrice = product.getProductPrice();
 
+        if (existingDetail.getIsActive()) {
+            boolean detailChanged = !existingDetail.getName().equals(productRequest.getProductName())
+                    || !existingDetail.getDescription().equals(productRequest.getDescription())
+                    || !existingDetail.getCategory().getId().equals(productRequest.getCategoryId());
+
+            boolean priceChanged = !existingPrice.getPrice().equals(productRequest.getPrice())
+                    || !existingPrice.getStock().equals(productRequest.getStock());
+
+            if (detailChanged) {
                 existingDetail.setIsActive(false);
                 productDetailService.update(existingDetail);
 
@@ -143,16 +149,34 @@ public class ProductServiceImpl implements ProductService {
                 ProductDetail savedNewDetail = productDetailService.createProductDetail(newDetail);
 
                 product.setProductDetail(savedNewDetail);
+            }
+
+            if (priceChanged) {
+                existingPrice.setActive(false);
+                productPriceService.update(existingPrice);
+
+                ProductPrice newPrice = ProductPrice.builder()
+                        .price(productRequest.getPrice())
+                        .stock(productRequest.getStock())
+                        .createdAt(LocalDateTime.now())
+                        .isActive(true)
+                        .build();
+                ProductPrice savedNewPrice = productPriceService.create(newPrice);
+
+                product.setProductPrice(savedNewPrice);
+            }
+
+            if (detailChanged || priceChanged) {
                 productRepository.save(product);
 
                 return ProductResponse.builder()
                         .productId(product.getId())
-                        .productName(savedNewDetail.getName())
+                        .productName(product.getProductDetail().getName())
                         .price(product.getProductPrice().getPrice())
-                        .productDescription(savedNewDetail.getDescription())
+                        .productDescription(product.getProductDetail().getDescription())
                         .stock(product.getProductPrice().getStock())
                         .productCategory(CategoryResponse.builder()
-                                .categoryName(savedNewDetail.getCategory().getName())
+                                .categoryName(product.getProductDetail().getCategory().getName())
                                 .build())
                         .build();
             } else {
@@ -162,6 +186,7 @@ public class ProductServiceImpl implements ProductService {
             throw new ProductInactiveException("Product detail is already inactive.");
         }
     }
+
 
     public boolean getByNameAndCategory(String productName, String categoryId) {
         Optional<Product> products = productRepository.findByNameAndCategory(productName, categoryId);
