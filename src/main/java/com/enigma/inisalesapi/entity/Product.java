@@ -7,7 +7,7 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Table(name = "m_product")
+@Table(name = "m_products")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -17,12 +17,12 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "product_detail_id",unique = true)
     @JsonBackReference
-    private Category category;
-    @OneToMany(mappedBy = "product")
-    private List<ProductPrice> productPrices;
-}
+    private ProductDetail productDetail;
+
+    @ManyToOne
+    @JoinColumn(name = "product_price_id",unique = true)
+    @JsonBackReference
+    private ProductPrice productPrice;}

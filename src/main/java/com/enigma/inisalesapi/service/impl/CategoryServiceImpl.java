@@ -97,4 +97,9 @@ public class CategoryServiceImpl implements CategoryService {
             throw new RuntimeException("Category not found with id: " + id);
         }
     }
+
+    @Override
+    public CategoryResponse getCategoryByName(String name) {
+        return categoryRepository.findCategoryByNameNative(name);
+    }
 }
