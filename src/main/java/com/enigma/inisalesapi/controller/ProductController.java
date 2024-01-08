@@ -55,7 +55,7 @@ public class ProductController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/soft-delete")
     public ResponseEntity<?> softDeleteById(@PathVariable String id) {
         try {
             productService.delete(id);
@@ -72,6 +72,24 @@ public class ProductController {
             return getResponseEntity(message, HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateById(@PathVariable String id, @RequestBody ProductRequest productRequest){
+        try {
+          ProductResponse product =  productService.updateProduct(id,productRequest);
+            message="Successfully update product data";
+            return getResponseEntity(message,HttpStatus.OK,product);
+        }catch (ProductAlreadyExistsException e) {
+            message = e.getMessage();
+            return getResponseEntity(message, HttpStatus.CONFLICT, null);
+        } catch (Exception e){
+            message=e.getMessage();
+            return getResponseEntity(message,HttpStatus.INTERNAL_SERVER_ERROR,null);
+        }
+    }
+
+
 
 }
 

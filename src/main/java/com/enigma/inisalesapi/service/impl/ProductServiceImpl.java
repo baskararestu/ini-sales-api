@@ -119,7 +119,48 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
-        return null;
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Product not found."));
+
+        ProductDetail existingDetail = product.getProductDetail();
+        if (existingDetail.getIsActive()) {
+            if (!existingDetail.getName().equals(productRequest.getProductName())
+                    || !existingDetail.getDescription().equals(productRequest.getDescription())
+                    || !existingDetail.getCategory().getId().equals(productRequest.getCategoryId())) {
+
+                existingDetail.setIsActive(false);
+                productDetailService.update(existingDetail);
+
+                ProductDetail newDetail = ProductDetail.builder()
+                        .name(productRequest.getProductName())
+                        .description(productRequest.getDescription())
+                        .isActive(true)
+                        .createdAt(LocalDateTime.now())
+                        .category(Category.builder()
+                                .id(productRequest.getCategoryId())
+                                .build())
+                        .build();
+                ProductDetail savedNewDetail = productDetailService.createProductDetail(newDetail);
+
+                product.setProductDetail(savedNewDetail);
+                productRepository.save(product);
+
+                return ProductResponse.builder()
+                        .productId(product.getId())
+                        .productName(savedNewDetail.getName())
+                        .price(product.getProductPrice().getPrice())
+                        .productDescription(savedNewDetail.getDescription())
+                        .stock(product.getProductPrice().getStock())
+                        .productCategory(CategoryResponse.builder()
+                                .categoryName(savedNewDetail.getCategory().getName())
+                                .build())
+                        .build();
+            } else {
+                throw new ProductAlreadyExistsException("Data is the same. No changes made.");
+            }
+        } else {
+            throw new ProductInactiveException("Product detail is already inactive.");
+        }
     }
 
     public boolean getByNameAndCategory(String productName, String categoryId) {
