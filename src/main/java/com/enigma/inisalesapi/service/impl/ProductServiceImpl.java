@@ -15,15 +15,20 @@ import com.enigma.inisalesapi.service.CategoryService;
 import com.enigma.inisalesapi.service.ProductDetailService;
 import com.enigma.inisalesapi.service.ProductPriceService;
 import com.enigma.inisalesapi.service.ProductService;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,7 +101,48 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductResponse> getAllByNameOrPrice(String name, Long maxPrice, Integer page, Integer size) {
-        return null;
+        Specification<Product> specification = (root, query, criteriaBuilder) -> {
+            Join<Product, ProductPrice> productPrices = root.join("productPrice");
+            List<Predicate> predicates = new ArrayList<>();
+            if (name != null) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower
+                        (root.get("productDetail").get("name")), "%" + name.toLowerCase() + "%"));
+            }
+            if (maxPrice != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(productPrices.get("price"), maxPrice));
+            }
+
+            return query.where(predicates.toArray(new Predicate[]{})).getRestriction();
+        };
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> products = productRepository.findAll(specification, pageable);
+
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(product -> {
+                    ProductPrice activeProductPrice = product.getProductPrice();
+
+                    if (activeProductPrice != null && activeProductPrice.isActive()) {
+                        return ProductResponse.builder()
+                                .productId(product.getId())
+                                .productName(product.getProductDetail().getName())
+                                .productDescription(product.getProductDetail().getDescription())
+                                .stock(product.getProductPrice().getStock())
+                                .productCategory(CategoryResponse.builder()
+                                        .id(product.getProductDetail().getCategory().getId())
+                                        .categoryName(product.getProductDetail().getCategory().getName())
+                                        .createdAt(product.getProductDetail().getCategory().getCreatedAt())
+                                        .build())
+                                .price(activeProductPrice.getPrice())
+                                .build();
+                    } else {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(productResponses, pageable, products.getTotalElements());
     }
 
     @Override
@@ -188,6 +234,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    @Override
     public boolean getByNameAndCategory(String productName, String categoryId) {
         Optional<Product> products = productRepository.findByNameAndCategory(productName, categoryId);
         return products.isEmpty();

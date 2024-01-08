@@ -4,6 +4,7 @@ import com.enigma.inisalesapi.constant.AppPath;
 import com.enigma.inisalesapi.dto.request.CategoryRequest;
 import com.enigma.inisalesapi.dto.request.ProductRequest;
 import com.enigma.inisalesapi.dto.response.CategoryResponse;
+import com.enigma.inisalesapi.dto.response.PagingResponse;
 import com.enigma.inisalesapi.dto.response.ProductResponse;
 import com.enigma.inisalesapi.exception.NotFoundException;
 import com.enigma.inisalesapi.exception.ProductAlreadyExistsException;
@@ -11,12 +12,13 @@ import com.enigma.inisalesapi.exception.ProductInactiveException;
 import com.enigma.inisalesapi.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import static com.enigma.inisalesapi.mapper.ResponseControllerMapper.getResponseEntity;
+import static com.enigma.inisalesapi.mapper.ResponseControllerMapper.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -89,7 +91,22 @@ public class ProductController {
         }
     }
 
-
+    @GetMapping("/page")
+    public ResponseEntity<?> getAllProductPage(
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "maxPrice", required = false) Long maxPrice,
+            @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(name = "size", required = false, defaultValue = "5") Integer size
+    ){
+        try {
+            Page<ProductResponse> productResponses = productService.getAllByNameOrPrice(name, maxPrice, page, size);
+            message = "Successfully getting data";
+            PagingResponse pagingResponse = getPagingResponse(page, size, productResponses);
+            return getResponseEntityPaging(message, HttpStatus.OK, productResponses.getContent(), pagingResponse);
+        } catch (Exception e) {
+            return getResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, null);
+        }
+    }
 
 }
 
