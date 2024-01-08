@@ -1,8 +1,10 @@
 package com.enigma.inisalesapi.constant;
 
 public class AppPath {
-    public final static String PRODUCT="/api/v1/products";
-    public final static String ADMIN ="/api/v1/admins";
-    public final static String ORDER ="/api/v1/orders";
-    public final static String AUTH ="/api/v1/auth";
+    public final static String BASE_PATH = "/api/v1/";
+    public final static String PRODUCT = BASE_PATH + "products";
+    public final static String ADMIN = BASE_PATH + "admins";
+    public final static String ORDER = BASE_PATH + "orders";
+    public final static String AUTH = BASE_PATH + "auth";
+    public final static String CATEGORY = BASE_PATH + "categories";
 }

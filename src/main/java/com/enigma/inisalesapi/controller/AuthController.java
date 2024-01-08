@@ -67,4 +67,19 @@ public class AuthController {
             return getResponseEntity(message, HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
     }
+
+    @PostMapping("/customers")
+    public ResponseEntity<?> createCustomer(@RequestBody AuthRequest authRequest) {
+        try {
+            RegisterResponse registerResponse = authService.registerCustomer(authRequest);
+            message = "Successfully create customer account";
+            return getResponseEntity(message,HttpStatus.CREATED,registerResponse);
+        } catch (ResponseStatusException e) {
+            message = e.getReason();
+            return getResponseEntity(message, HttpStatus.CONFLICT, null);
+        } catch (Exception e) {
+            message = e.getMessage();
+            return getResponseEntity(message, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        }
+    }
 }

@@ -15,8 +15,8 @@ import java.util.List;
 public class ProductResponse {
     private String productId;
     private String productName;
-    private String productCategory;
+    private String productDescription;
+    private CategoryResponse productCategory;
     private Long price;
     private Integer stock;
-    private List<ProductPrice>priceList;
 }

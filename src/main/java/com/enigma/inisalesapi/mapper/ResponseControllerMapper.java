@@ -20,13 +20,13 @@ public class ResponseControllerMapper {
 
     public static ResponseEntity<?> getResponseEntityPaging
             (String message, HttpStatus httpStatus, Object object, PagingResponse pagingResponse) {
-        return ResponseEntity.status(httpStatus)
-                .body(CommonResponse.builder()
-                        .statusCode(httpStatus.value())
-                        .message(message)
-                        .data(object)
-                        .pagingResponse(pagingResponse)
-                        .build());
+        CommonResponse commonResponse = CommonResponse.builder()
+                .statusCode(httpStatus.value())
+                .message(message)
+                .data(object)
+                .pagingResponse(pagingResponse)
+                .build();
+        return ResponseEntity.status(httpStatus).body(commonResponse);
     }
 
     public static PagingResponse getPagingResponse(Integer page, Integer size, Page<ProductResponse> productResponses) {
